@@ -1,0 +1,6 @@
+[submodule "ip_cores/urv-core"]
+	path = ip_cores/urv-core
+	url = https://ohwr.org/project/urv-core.git
+[submodule "ip_cores/general-cores"]
+	path = ip_cores/general-cores
+	url = https://ohwr.org/project/general-cores.git
