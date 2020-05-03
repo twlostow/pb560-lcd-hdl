@@ -1,0 +1,787 @@
+memory-map:
+  bus: wb-32-be
+  name: sys
+  description: System Control Registers
+  x-driver-edge:
+    module-type: BE_SYS_CTRL
+  x-wbgen:
+    hdl_entity: system_ctrl_wb
+  schema-version:
+    core: 2.0.0
+    x-gena: 1.0.0
+    x-hdl: 1.0.0
+    x-fesa: 2.0.0
+    x-driver-edge: 1.0.0
+    x-conversions: 1.0.0
+    x-wbgen: 1.0.0
+    x-map-info: 1.0.0
+  x-gena:
+    map-version: 20191129
+  x-map-info:
+    ident: 0x102
+    memmap-version: 1.0.0
+  children:
+    - reg:
+        name: board_ctrl
+        address: 0x00000000
+        width: 32
+        access: rw
+        description: Board Control Register
+        children:
+          - field:
+              name: clk_sel
+              range: 3-0
+              description: Board Clock Selection
+              comment: "Selects the clock source for the ADC/DAC/DSP chain:\n0 : PCI local clock\n1 : RTM external 500 MHz input\n2 : AMC external 500 MHz input\n3 : AMC WR oscillator\n4 : RF backplane CLKA\n(note : only options 0, 1 and 2 are currently supported)\n"
+          - field:
+              name: clk_fallback_sel
+              range: 7-4
+              description: Board Fallback Clock Selection
+              comment: "Fallback clock selection. Reserved for future use.\n"
+          - field:
+              name: rtm_sel
+              range: 11-8
+              description: RTM Type Selection
+              comment: "Selects the RTM to use with the SIS8300KU: 0: No RTM, 1: DS8VM1"
+          - field:
+              name: rst_dsp
+              range: 12
+              description: Manual DSP Reset
+              comment: Sets DSP reset to the value of this bit
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: clk_switch_trigger
+              range: 13
+              description: Trigger clock switch
+              comment: "Writing 1 triggers the system MCU to reconfigure the clock source (taking clk_sel, clk_sync_source and rtm_sel values)\nCompletion of clock switch is indicated through the BOARD_STAT.CLK_SWITCH_DONE bit.\n"
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: clk_sync_restart
+              range: 14
+              description: Restart clock sync
+              comment: Attempts a resync of the board's clocks.
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: clk_sync_source
+              range: 19-16
+              description: DSP Clock Sync source
+              comment: "Source of the sync signal to phase all internal clocks:\n0 : internal trigger (default, all other options currently RFU)\n1 : RTM external input\n2 : WR PPS\n(note : currently only option 0 is available)\n"
+    - reg:
+        name: board_stat
+        address: 0x00000008
+        width: 32
+        access: rw
+        description: Board Status Register
+        children:
+          - field:
+              name: conf_done
+              range: 0
+              description: Indicate the board's CPU is completely configured and ready to accept commands
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: dac_cal_done
+              range: 1
+              description: Indicates that the DAC ODELAY calibration is complete.
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: adc_cal_done
+              range: 2
+              description: Indicatea that the ADC SerDes bitslip calibration is complete.
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: clk_sync_done
+              range: 3
+              description: Indicates that internal clock synchronization is complete.
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: clk_ext_present
+              range: 4
+              description: Indicates the presence of a correct external input clock (EXT RTM/AMC)
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: clk_switch_done
+              range: 5
+              description: Indicate the DSP clock switch has been done.
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: clk_lost
+              range: 6
+              description: Indicate the board DSP clock has gone.
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+    - reg:
+        name: clk_ext_freq
+        address: 0x0000000c
+        width: 32
+        access: ro
+        description: External Clock Frequency (pre-multiplexer)
+        comment: Frequency on the RTM/AMC external clock input.
+        children:
+          - field:
+              name: valid
+              range: 31
+              description: 1 if frequency value is valid
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: freq
+              range: 30-0
+              description: Frequency (in Hz)
+              x-wbgen:
+                type: SLV
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+    - reg:
+        name: rtm_gpio
+        address: 0x00000010
+        width: 32
+        access: rw
+        description: RTM Board Status and Control GPIO pins
+        children:
+          - field:
+              name: pll_ld
+              range: 0
+              description: State of the PLL_LD pin.
+              comment: ""
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: pll_holdover
+              range: 1
+              description: State of the PLL_HOLDOVER pin.
+              comment: ""
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: pll_clkin1_stat
+              range: 2
+              description: State of the PLL_CLKIN1_STAT pin.
+              comment: ""
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: pll_clkin2_stat
+              range: 3
+              description: Status
+              comment: ""
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: vm_gate_monitor
+              range: 4
+              description: Status
+              comment: True if RF on
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: amc_interlock_monitor
+              range: 5
+              description: Status
+              comment: True if interlock active (RF off)
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: reset_select
+              range: 6
+              description: Status
+              comment: ""
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: reset_source
+              range: 7
+              description: Status
+              comment: ""
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: reset_enable
+              range: 8
+              description: Status
+              comment: ""
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+    - reg:
+        name: rxtx
+        address: 0x00000014
+        width: 32
+        access: rw
+        description: uTCA RX/TX Data
+        x-hdl:
+          write-strobe: true
+        children:
+          - field:
+              name: drive
+              range: 7-0
+              description: Drive
+              comment: Overwrite uTCA bus values
+          - field:
+              name: data
+              range: 15-8
+              description: Data
+              comment: "Order: RX17, TX17, RX18, TX18, RX19, TX19, RX20, TX20"
+              x-wbgen:
+                type: SLV
+                access_bus: READ_WRITE
+                access_dev: READ_WRITE
+                load: LOAD_EXT
+    - reg:
+        name: RTM_ATT_CH1
+        address: 0x0000001c
+        width: 32
+        access: rw
+        description: RTM Attenuator, RF In 1
+        children:
+          - field:
+              name: value
+              range: 5-0
+              description: "Attenuation (in taps). Range: 0.5 - 31.5dB"
+              comment: "Datasheet: DRTM-DWC8VM1"
+              x-conversions:
+                read: 31.5 - ((31.0*val)/63)
+                write: 63 - 63*((val-0.5)/31)
+    - reg:
+        name: RTM_ATT_CH2
+        address: 0x00000020
+        width: 32
+        access: rw
+        description: RTM Attenuator, RF In 2
+        children:
+          - field:
+              name: value
+              range: 5-0
+              description: "Attenuation (in taps). Range: 0.5 - 31.5dB"
+              comment: "Datasheet: DRTM-DWC8VM1"
+              x-conversions:
+                read: 31.5 - ((31.0*val)/63)
+                write: 63 - 63*((val-0.5)/31)
+    - reg:
+        name: RTM_ATT_CH3
+        address: 0x00000024
+        width: 32
+        access: rw
+        description: RTM Attenuator, RF In 3
+        children:
+          - field:
+              name: value
+              range: 5-0
+              description: "Attenuation (in taps). Range: 0.5 - 31.5dB"
+              comment: "Datasheet: DRTM-DWC8VM1"
+              x-conversions:
+                read: 31.5 - ((31.0*val)/63)
+                write: 63 - 63*((val-0.5)/31)
+    - reg:
+        name: RTM_ATT_CH4
+        address: 0x00000028
+        width: 32
+        access: rw
+        description: RTM Attenuator, RF In 4
+        children:
+          - field:
+              name: value
+              range: 5-0
+              description: "Attenuation (in taps). Range: 0.5 - 31.5dB"
+              comment: "Datasheet: DRTM-DWC8VM1"
+              x-conversions:
+                read: 31.5 - ((31.0*val)/63)
+                write: 63 - 63*((val-0.5)/31)
+    - reg:
+        name: RTM_ATT_CH5
+        address: 0x0000002c
+        width: 32
+        access: rw
+        description: RTM Attenuator, RF In 5
+        children:
+          - field:
+              name: value
+              range: 5-0
+              description: "Attenuation (in taps). Range: 0.5 - 31.5dB"
+              comment: "Datasheet: DRTM-DWC8VM1"
+              x-conversions:
+                read: 31.5 - ((31.0*val)/63)
+                write: 63 - 63*((val-0.5)/31)
+    - reg:
+        name: RTM_ATT_CH6
+        address: 0x00000030
+        width: 32
+        access: rw
+        description: RTM Attenuator, RF In 6
+        children:
+          - field:
+              name: value
+              range: 5-0
+              description: "Attenuation (in taps). Range: 0.5 - 31.5dB"
+              comment: "Datasheet: DRTM-DWC8VM1"
+              x-conversions:
+                read: 31.5 - ((31.0*val)/63)
+                write: 63 - 63*((val-0.5)/31)
+    - reg:
+        name: RTM_ATT_CH7
+        address: 0x00000034
+        width: 32
+        access: rw
+        description: RTM Attenuator, RF In 7
+        children:
+          - field:
+              name: value
+              range: 5-0
+              description: "Attenuation (in taps). Range: 0.5 - 31.5dB"
+              comment: "Datasheet: DRTM-DWC8VM1"
+              x-conversions:
+                read: 31.5 - ((31.0*val)/63)
+                write: 63 - 63*((val-0.5)/31)
+    - reg:
+        name: RTM_ATT_CH8
+        address: 0x00000038
+        width: 32
+        access: rw
+        description: RTM Attenuator, RF In 8
+        children:
+          - field:
+              name: value
+              range: 5-0
+              description: "Attenuation (in taps). Range: 0.5 - 31.5dB"
+              comment: "Datasheet: DRTM-DWC8VM1"
+              x-conversions:
+                read: 31.5 - ((31.0*val)/63)
+                write: 63 - 63*((val-0.5)/31)
+    - reg:
+        name: RTM_ATT_CH9
+        address: 0x0000003c
+        width: 32
+        access: rw
+        description: RTM Attenuator, RF Out (Vector Modulator)
+        children:
+          - field:
+              name: value
+              range: 5-0
+              description: "Attenuation (in taps). Range: 0.5 - 15.5dB"
+              comment: "Datasheet: DRTM-DWC8VM1"
+              x-conversions:
+                read: 15.5 - ((15.0*val)/63)
+                write: 63 - 63*((val-0.5)/15)
+    - reg:
+        name: RTM_MAX6626_TEMP_1
+        address: 0x00000040
+        width: 32
+        access: ro
+        description: RTM MAX6626 Temperature Sensor 1
+        type: signed
+        children:
+          - field:
+              name: VALID
+              range: 0
+              description: Temperature Valid
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: TEMP
+              range: 16-1
+              description: Temperature (MAX6626 format) in C
+              x-conversions:
+                read: val*0.00390625
+    - reg:
+        name: RTM_MAX6626_TEMP_2
+        address: 0x00000044
+        width: 32
+        access: ro
+        description: RTM MAX6626 Temperature Sensor 2
+        type: signed
+        children:
+          - field:
+              name: VALID
+              range: 0
+              description: Temperature Valid
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: TEMP
+              range: 16-1
+              description: Temperature (MAX6626 format) in C
+              x-conversions:
+                read: val*0.00390625
+    - reg:
+        name: RTM_MAX6626_TEMP_3
+        address: 0x00000048
+        width: 32
+        access: ro
+        description: RTM MAX6626 Temperature Sensor 3
+        type: signed
+        children:
+          - field:
+              name: VALID
+              range: 0
+              description: Temperature Valid
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: TEMP
+              range: 16-1
+              description: Temperature (MAX6626 format) in C
+              x-conversions:
+                read: val*0.00390625
+    - reg:
+        name: RTM_MAX6626_TEMP_4
+        address: 0x0000004c
+        width: 32
+        access: ro
+        description: RTM MAX6626 Temperature Sensor 4
+        type: signed
+        children:
+          - field:
+              name: VALID
+              range: 0
+              description: Temperature Valid
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: TEMP
+              range: 16-1
+              description: Temperature (MAX6626 format) in C
+              x-conversions:
+                read: val*0.00390625
+    - reg:
+        name: RTM_LTC2493_TEMP_1
+        address: 0x00000050
+        width: 32
+        access: ro
+        description: RTM LTC2493 Temperature Sensor Channel 1
+        children:
+          - field:
+              name: VALID
+              range: 0
+              description: Temperature Valid
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: TEMP
+              range: 31-1
+              description: Temperature (LTC2943 format)
+              x-conversions:
+                read: val
+    - reg:
+        name: RTM_LTC2493_TEMP_2
+        address: 0x00000054
+        width: 32
+        access: ro
+        description: RTM LTC2493 Temperature Sensor Channel 2
+        children:
+          - field:
+              name: VALID
+              range: 0
+              description: Temperature Valid
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: TEMP
+              range: 31-1
+              description: Temperature (LTC2943 format)
+              x-conversions:
+                read: val
+    - reg:
+        name: RTM_LTC2493_TEMP_3
+        address: 0x00000058
+        width: 32
+        access: ro
+        description: RTM LTC2493 Temperature Sensor Channel 3
+        children:
+          - field:
+              name: VALID
+              range: 0
+              description: Temperature Valid
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: TEMP
+              range: 31-1
+              description: Temperature (LTC2943 format)
+              x-conversions:
+                read: val
+    - reg:
+        name: RTM_LTC2493_TEMP_4
+        address: 0x0000005c
+        width: 32
+        access: ro
+        description: RTM LTC2493 Temperature Sensor Channel 4
+        children:
+          - field:
+              name: VALID
+              range: 0
+              description: Temperature Valid
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: TEMP
+              range: 31-1
+              description: Temperature (LTC2943 format)
+              x-conversions:
+                read: val
+    - reg:
+        name: FAR
+        address: 0x00000068
+        width: 32
+        access: rw
+        description: Flash Access Register
+        comment: Provides direct access to the SPI flash memory containing the bitstream.
+        x-hdl:
+          write-strobe: true
+        children:
+          - field:
+              name: DATA
+              range: 7-0
+              description: SPI Data
+              comment: Data to be written / read to/from the flash SPI controller.
+              x-wbgen:
+                type: SLV
+                access_bus: READ_WRITE
+                access_dev: READ_WRITE
+                load: LOAD_EXT
+          - field:
+              name: XFER
+              range: 8
+              description: SPI Start Transfer
+              comment: "write 1: initiate an SPI transfer with an 8-bit data word taken from the DATA field. write 0: no effect"
+              x-wbgen:
+                type: MONOSTABLE
+          - field:
+              name: READY
+              range: 9
+              description: SPI Ready
+              comment: "read 1: Core is ready to initiate another transfer. DATA field contains the data read during previous transaction. read 0: core is busy\n"
+              x-wbgen:
+                type: BIT
+                access_bus: READ_ONLY
+                access_dev: WRITE_ONLY
+          - field:
+              name: CS
+              range: 10
+              description: SPI Chip Select
+              comment: "write 1: Enable target SPI controller. write 0: Disable target SPI controller\n"
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+    - reg:
+        name: dac_odelay_adj
+        address: 0x0000006c
+        width: 32
+        access: rw
+        description: DAC ODELAY Adjust
+        children:
+          - field:
+              name: odelay
+              range: 31-0
+              description: Delay value
+              comment: Clock-to-data value for the DAC SerDses in picoseconds (0-3999)
+              x-wbgen:
+                type: SLV
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+    - reg:
+        name: int_clk_csr
+        width: 32
+        access: rw
+        address: 0x74
+        description: Internal Clock Control/Status Register. Used by the System MCU to directly control clocking peripherals.
+        children:
+          - field:
+              name: clk_dsp_sel
+              description: DSP Clock selection
+              comment: "1: PCI, 0: External\n"
+              range: 0
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: clk_dsp_overwrite
+              description: Force DSP Clock Selection
+              comment: If set to 1, disables automatic switching
+              range: 1
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: clk_ext_sel
+              description: Ext. Clock Selection
+              comment: "1: Reference, 0: PCB\n"
+              range: 2
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: rst_dsp_sel
+              description: Manual DSP Reset
+              comment: Sets DSP reset (if currently stable) to the value of this bit
+              range: 3
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: rst_dsp_overwrite
+              description: Force DSP Reset
+              comment: If set to 1, set DSP reset to value of previous bit register
+              range: 4
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: clk_dsp_src
+              description: DSP Clock Source
+              comment: "1: PCI, 0: External\n"
+              range: 5
+              x-wbgen:
+                type: BIT
+                access_bus: READ_ONLY
+                access_dev: WRITE_ONLY
+          - field:
+              name: clk_ext_src
+              description: Ext. Clock Source
+              comment: "1: Reference, 0: PCB\n"
+              range: 6
+              x-wbgen:
+                type: BIT
+                access_bus: READ_ONLY
+                access_dev: WRITE_ONLY
+          - field:
+              name: clk_ext_active
+              description: Ext. Clock Source Active
+              comment: Indicates if the board is running from the external clock source
+              range: 7
+              x-wbgen:
+                type: BIT
+                access_bus: READ_ONLY
+                access_dev: WRITE_ONLY
+          - field:
+              name: rst_dsp_state
+              description: DSP Reset State
+              range: 8
+              x-wbgen:
+                type: BIT
+                access_bus: READ_ONLY
+                access_dev: WRITE_ONLY
+          - field:
+              name: mgnt_state
+              description: Manager Status
+              range: 12-10
+              x-wbgen:
+                type: SLV
+                access_bus: READ_ONLY
+                access_dev: WRITE_ONLY
+    - reg:
+        name: clk_pcb_freq
+        address: 0x00000078
+        width: 32
+        access: ro
+        description: External Clock Frequency (post-multiplexer)
+        comment: Frequency after the external clock mux
+        children:
+          - field:
+              name: valid
+              range: 31
+              description: 1 if frequency value is valid
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: freq
+              range: 30-0
+              description: Frequency (in Hz)
+              x-wbgen:
+                type: SLV
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+    - reg:
+        name: clk_dac_freq
+        address: 0x0000007c
+        width: 32
+        access: ro
+        description: DAC Clock Frequency
+        comment: Frequency of the MAX5878 DAC.
+        children:
+          - field:
+              name: valid
+              range: 31
+              description: 1 if frequency value is valid
+              x-wbgen:
+                type: BIT
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
+          - field:
+              name: freq
+              range: 30-0
+              description: Frequency (in Hz)
+              x-wbgen:
+                type: SLV
+                access_bus: READ_WRITE
+                access_dev: READ_ONLY
